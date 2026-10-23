@@ -22,4 +22,4 @@ wheels/
 *.tfstate
 *.tfstate.*
 *.tfvars
-terraform/.terraform.lock.hcl
+.terraform.lock.hcl
