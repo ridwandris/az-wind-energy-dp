@@ -12,7 +12,6 @@ data "azurerm_databricks_workspace" "dbx" {
   resource_group_name = data.azurerm_resource_group.rg.name
 }
 
-
 # Globally unique storage name
 resource "random_string" "suffix" {
   length  = 4
@@ -51,5 +50,18 @@ resource "azurerm_databricks_access_connector" "unity_connector" {
 resource "azurerm_role_assignment" "storage_data_contributor" {
   scope                = azurerm_storage_account.adls.id
   role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azurerm_databricks_access_connector.unity_connector.identity[0].principal_id
+}
+
+# Additional permissions required for Databricks File Events
+resource "azurerm_role_assignment" "file_events_roles" {
+  for_each = toset([
+    "Storage Account Contributor",
+    "EventGrid EventSubscription Contributor",
+    "Storage Queue Data Contributor"
+  ])
+
+  scope                = azurerm_storage_account.adls.id
+  role_definition_name = each.value
   principal_id         = azurerm_databricks_access_connector.unity_connector.identity[0].principal_id
 }
