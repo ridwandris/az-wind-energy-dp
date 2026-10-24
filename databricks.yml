@@ -1,0 +1,31 @@
+bundle:
+  name: az_wind_energy_dp
+
+resources:
+  jobs:
+    ingest_kelmarsh_zenodo_job:
+      name: "01_ingest_kelmarsh_zenodo_to_adls"
+      tasks:
+        - task_key: download_and_extract_zenodo
+          spark_python_task:
+            python_file: data_pipeline/kelmarsh_data_ingestion.py
+            parameters:
+              - "ALL"
+          environment_key: default_serverless_env
+
+      environments:
+        - environment_key: default_serverless_env
+          spec:
+            client: "1"
+            dependencies:
+              - requests
+
+targets:
+  dev:
+    mode: development
+    default: true
+
+  prod:
+    mode: production
+    workspace:
+      root_path: /Shared/.bundle/${bundle.name}/${bundle.target}

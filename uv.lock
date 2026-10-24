@@ -19,6 +19,7 @@ dependencies = [
     { name = "azure-storage-blob" },
     { name = "pandas" },
     { name = "python-dotenv" },
+    { name = "requests" },
 ]
 
 [package.dev-dependencies]
@@ -32,6 +33,7 @@ requires-dist = [
     { name = "azure-storage-blob", specifier = ">=12.31.0" },
     { name = "pandas", specifier = ">=3.1.0" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
+    { name = "requests", specifier = ">=2.34.2" },
 ]
 
 [package.metadata.requires-dev]

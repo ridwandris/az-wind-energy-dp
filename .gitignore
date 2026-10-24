@@ -22,4 +22,8 @@ wheels/
 *.tfstate
 *.tfstate.*
 *.tfvars
+.terraform/
 .terraform.lock.hcl
+
+.tmp_zenodo/
+.databricks/
