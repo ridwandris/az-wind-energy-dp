@@ -16,6 +16,7 @@ dependencies = [
 dev = [
     "ruff>=0.17.2",
     "databricks-connect~=18.0.0",
+    "pytest>=8.3.5",
 ]
 
 [tool.databricks.environment]
@@ -266,3 +267,7 @@ constraint-dependencies = [
     "zstandard~=0.23.0",
 ]
 # end managed by databricks environments setup-local
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
