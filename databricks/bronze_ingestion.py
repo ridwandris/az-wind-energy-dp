@@ -88,6 +88,18 @@ def ingest_stream_with_autoloader(
         .withColumn("ingested_at", F.current_timestamp())
     )
 
+    # Streaming toTable() ignores delta.* writer options, so pre-create the target
+    # table via a batch write (which honors them) to enable column mapping. Kelmarsh
+    # headers contain spaces/commas/parentheses that Delta rejects without it.
+    if not spark.catalog.tableExists(full_table_name):
+        print(f"Pre-creating {full_table_name} with column mapping enabled...")
+        (
+            spark.createDataFrame([], df_stream.schema)
+            .write.format("delta")
+            .option("delta.columnMapping.mode", "name")
+            .saveAsTable(full_table_name)
+        )
+
     query = (
         df_stream.writeStream.format("delta")
         .option("checkpointLocation", checkpoint_location)
