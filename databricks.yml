@@ -59,6 +59,24 @@ resources:
           spec:
             client: "1"
 
+    ml_digital_twin_job:
+      name: "06_ml_power_digital_twin"
+      tasks:
+        - task_key: train_and_score_digital_twin
+          spark_python_task:
+            python_file: databricks/ml_power_prediction.py
+          environment_key: ml_serverless_env
+
+      environments:
+        - environment_key: ml_serverless_env
+          spec:
+            client: "1"
+            dependencies:
+              - scikit-learn
+              - mlflow
+              - pandas
+              - numpy
+
     medallion_end_to_end_pipeline:
       name: "05_kelmarsh_medallion_orchestrator"
       tasks:
@@ -81,10 +99,25 @@ resources:
             python_file: databricks/gold_aggregations.py
           environment_key: serverless_env
 
+        - task_key: ml_digital_twin
+          depends_on:
+            - task_key: gold_kpis
+          spark_python_task:
+            python_file: databricks/ml_power_prediction.py
+          environment_key: ml_serverless_env
+
       environments:
         - environment_key: serverless_env
           spec:
             client: "1"
+        - environment_key: ml_serverless_env
+          spec:
+            client: "1"
+            dependencies:
+              - scikit-learn
+              - mlflow
+              - pandas
+              - numpy
 
 targets:
   dev:

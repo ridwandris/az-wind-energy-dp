@@ -1,9 +1,12 @@
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 from pyspark.sql import Column
 
 from data_pipeline.kelmarsh_data_ingestion import extract_year
 from databricks.bronze_ingestion import strip_kelmarsh_preamble
+from databricks.ml_power_prediction import add_cyclical_features
 from databricks.silver_transformation import clean_numeric_col
 
 
@@ -62,3 +65,26 @@ def test_clean_numeric_col_returns_spark_column() -> None:
     expr_str = str(col_expr)
     assert "Wind speed (m/s)" in expr_str
     assert "nan" in expr_str.lower()
+
+
+def test_add_cyclical_features_computes_periodic_bounds() -> None:
+    """Verify wind direction (0 vs 360 deg) and month cyclical features align."""
+    df = pd.DataFrame(
+        {
+            "wind_direction_deg": [0.0, 90.0, 360.0],
+            "event_month": [1, 4, 1],
+        }
+    )
+    enriched = add_cyclical_features(df)
+
+    # 0 deg and 360 deg must map to identical sin/cos coordinates
+    assert np.isclose(enriched.loc[0, "wind_dir_sin"], enriched.loc[2, "wind_dir_sin"])
+    assert np.isclose(enriched.loc[0, "wind_dir_cos"], enriched.loc[2, "wind_dir_cos"])
+    assert np.isclose(enriched.loc[1, "wind_dir_sin"], 1.0)
+    assert np.isclose(enriched.loc[1, "wind_dir_cos"], 0.0)
+
+    # Month 1 (Jan) starts at angle 0 -> sin=0, cos=1; Month 4 (Apr) -> 90 deg -> sin=1, cos=0
+    assert np.isclose(enriched.loc[0, "month_sin"], 0.0)
+    assert np.isclose(enriched.loc[0, "month_cos"], 1.0)
+    assert np.isclose(enriched.loc[1, "month_sin"], 1.0)
+    assert np.isclose(enriched.loc[1, "month_cos"], 0.0)

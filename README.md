@@ -1,6 +1,6 @@
 # European Wind Energy Data Platform on Azure Databricks
 
-An end-to-end, production-grade Lakehouse platform built on **Azure Databricks (Serverless)** and **Azure Data Lake Storage Gen2 (ADLS Gen2)**. This project ingests, cleans, models, and visualizes 9 years (**2016–2024**) of high-frequency 10-minute operational SCADA telemetry and fault event logs (~3.8 GB compressed, **~2.84 million SCADA intervals**, and **~275,000 status events**) from the **Kelmarsh Wind Farm (UK)** using **Terraform**, **Unity Catalog**, **Databricks Asset Bundles (DABs)**, **PySpark / Auto Loader**, **Databricks Lakeview AI/BI Dashboards**, and **GitHub Actions CI/CD**.
+An end-to-end, production-grade Lakehouse and Machine Learning Digital Twin platform built on **Azure Databricks (Serverless)** and **Azure Data Lake Storage Gen2 (ADLS Gen2)**. This project ingests, cleans, models, scores, and visualizes 9 years (**2016–2024**) of high-frequency 10-minute operational SCADA telemetry and fault event logs (~3.8 GB compressed, **~2.84 million SCADA intervals**, and **~275,000 status events**) from the **Kelmarsh Wind Farm (UK)** using **Terraform**, **Unity Catalog**, **Databricks Asset Bundles (DABs)**, **PySpark / Auto Loader**, **MLflow & scikit-learn**, **Databricks Lakeview AI/BI Dashboards**, and **GitHub Actions CI/CD**.
 
 ---
 
@@ -14,7 +14,8 @@ An end-to-end, production-grade Lakehouse platform built on **Azure Databricks (
 6. [Medallion Architecture & Data Catalog](#6-medallion-architecture--data-catalog)
    - [Bronze Layer (Raw Ingestion via Auto Loader)](#61-bronze-layer-raw-ingestion-via-auto-loader)
    - [Silver Layer (Cleaned, Validated & Enriched)](#62-silver-layer-cleaned-validated--enriched)
-   - [Gold Layer (Analytics & Domain KPIs)](#63-gold-layer-analytics--domain-kpis)
+   - [Gold Layer (Analytics, Domain KPIs & ML Anomalies)](#63-gold-layer-analytics-domain-kpis--ml-anomalies)
+   - [Machine Learning Digital Twin & Anomaly Detection](#64-machine-learning-digital-twin--anomaly-detection)
 7. [Databricks AI/BI Lakeview Dashboard](#7-databricks-aibi-lakeview-dashboard)
 8. [Databricks Asset Bundles (DABs) Orchestration](#8-databricks-asset-bundles-dabs-orchestration)
 9. [Testing & CI/CD Quality Gate](#9-testing--cicd-quality-gate)
@@ -41,6 +42,7 @@ The [Kelmarsh Wind Farm](https://doi.org/10.5281/zenodo.16807551) in Northampton
 | **Data Governance** | Databricks Unity Catalog | 3-level namespace (`kelmarsh_wind.<schema>.<table>`), Storage Credentials, External Locations, and External Volumes |
 | **Compute & Orchestration** | Databricks Serverless Workflows & DABs | Declarative multi-task DAG deployment (`databricks.yml`) running on zero-management Serverless compute (`client: "1"`) |
 | **Stream & Batch Processing** | PySpark & Databricks Auto Loader (`cloudFiles`) | Incremental file ingestion with schema evolution, Delta Column Mapping, Window deduplication, and Liquid Clustering |
+| **Machine Learning & MLOps** | `scikit-learn` & MLflow (Unity Catalog Registry) | `HistGradientBoostingRegressor` Digital Twin power curve modeling, Unity Catalog model registration, and residual anomaly scoring |
 | **BI & Visualization** | Databricks AI/BI Lakeview Dashboards | Interactive executive & asset reliability dashboard exported as code (`dashboards/kelmarsh_wind_dashboard.lvdash.json`) |
 | **Environment & Packaging** | `uv` (Astral) & Python 3.12 | Deterministic dependency locking (`uv.lock`) aligned with Databricks Serverless Environment v5 constraints |
 | **Quality & CI/CD** | GitHub Actions, `pytest`, `ruff`, `databricks-connect` | Automated linting, formatting, Spark Connect unit testing, and Terraform validation on every push/PR |
@@ -63,7 +65,8 @@ az-wind-energy-dp/
 ├── databricks/
 │   ├── bronze_ingestion.py                         # Auto Loader (cloudFiles) incremental Bronze ingestion
 │   ├── silver_transformation.py                    # Data cleansing, standardization, DQ checks & deduplication
-│   └── gold_aggregations.py                        # Domain KPI aggregations (Daily Yield, IEC Curves, MTTR)
+│   ├── gold_aggregations.py                        # Domain KPI aggregations (Daily Yield, IEC Curves, MTTR)
+│   └── ml_power_prediction.py                      # ML Digital Twin training, UC registration & anomaly detection
 ├── terraform/
 │   ├── main.tf                                     # ADLS Gen2, Access Connector & File Events RBAC definitions
 │   ├── variables.tf                                # Input variables (subscription, resource group, workspace)
@@ -130,6 +133,7 @@ All tables are registered in Unity Catalog under the **`kelmarsh_wind`** catalog
 | **Gold** | `kelmarsh_wind.gold.daily_turbine_performance` | `(turbine_id, event_date)` | Batch `overwrite` | `CLUSTER BY (turbine_id, event_date)` | ~19,722 |
 | **Gold** | `kelmarsh_wind.gold.iec_power_curves` | `(turbine_id, event_year, wind_speed_bin_ms)` | Batch `overwrite` | `CLUSTER BY (turbine_id, event_year)` | ~2,400+ |
 | **Gold** | `kelmarsh_wind.gold.monthly_fault_summary` | `(turbine_id, event_year, event_month, status_type, iec_category)` | Batch `overwrite` | `CLUSTER BY (turbine_id, event_year)` | ~3,500+ |
+| **Gold (ML)** | `kelmarsh_wind.gold.ml_turbine_anomalies` | `(turbine_id, event_date)` (2023–2024 scored) | Batch `overwrite` | `CLUSTER BY (turbine_id, event_date)` | ~4,380 |
 
 ---
 
@@ -158,8 +162,8 @@ Implemented in [`databricks/silver_transformation.py`](databricks/silver_transfo
 
 ---
 
-### 6.3 Gold Layer (Analytics & Domain KPIs)
-Implemented in [`databricks/gold_aggregations.py`](databricks/gold_aggregations.py):
+### 6.3 Gold Layer (Analytics, Domain KPIs & ML Anomalies)
+Implemented in [`databricks/gold_aggregations.py`](databricks/gold_aggregations.py) and [`databricks/ml_power_prediction.py`](databricks/ml_power_prediction.py):
 
 1. **`gold.daily_turbine_performance`**:
    - Joins valid 10-minute SCADA readings (`is_valid_reading = true`) with `silver.turbines_dim`.
@@ -176,6 +180,21 @@ Implemented in [`databricks/gold_aggregations.py`](databricks/gold_aggregations.
 3. **`gold.monthly_fault_summary`**:
    - Aggregates `silver.status_events_clean` by `turbine_id`, `event_year`, `event_month`, `status_type`, and `iec_category`.
    - Calculates monthly `event_count`, `total_duration_hours`, and **Mean Time To Resolve (`mttr_hours`)**.
+
+4. **`gold.ml_turbine_anomalies`**:
+   - Daily turbine anomaly summary generated by the Machine Learning Digital Twin (`databricks/ml_power_prediction.py`), joined with `silver.turbines_dim` and Liquid Clustered by `(turbine_id, event_date)`.
+
+---
+
+### 6.4 Machine Learning Digital Twin & Anomaly Detection
+Implemented in [`databricks/ml_power_prediction.py`](databricks/ml_power_prediction.py):
+
+- **Cyclical Feature Engineering (`add_cyclical_features`)**: Converts periodic wind direction (`0°–360°`) and calendar month (`1–12`) into continuous trigonometric features (`wind_dir_sin`, `wind_dir_cos`, `month_sin`, `month_cos`) alongside wind speed statistics (`wind_speed_ms`, `wind_speed_std_ms`, `wind_speed_max_ms`, `density_adj_wind_speed_ms`) and thermal readings (`ambient_temp_c`, `nacelle_temp_c`).
+- **Healthy Baseline Training (`2016–2022`)**: Filters `silver.scada_10min_clean` to normal, un-curtailed operating intervals (`is_valid_reading == True`, `lost_prod_downtime_kwh <= 0`, and `lost_prod_curtailment_kwh <= 0`) across 2016–2022 to train a `scikit-learn` `HistGradientBoostingRegressor` predicting expected `active_power_kw`.
+- **MLflow Tracking & Unity Catalog Model Registry**: Evaluates out-of-time 2023 predictions (`val_rmse_kw`, `val_mae_kw`, `val_r2_score`), infers the model signature, and registers the model directly in Unity Catalog as **`kelmarsh_wind.gold.turbine_power_digital_twin`**.
+- **Unexplained Underperformance Anomaly Scoring (`2023–2024`)**: Scores all 2023–2024 intervals and flags stealth underperformance where the turbine is operating in the power-producing wind regime (`5.0–20.0 m/s`) with **zero logged downtime or curtailment**, yet exhibits a power deficit:
+  $$\text{Power Residual (kW)} = \hat{P}_{\text{digital\_twin}} - P_{\text{actual}} > 250\text{ kW}$$
+- Aggregates daily `evaluated_intervals`, `anomaly_intervals`, `anomaly_rate_pct`, `avg_power_residual_kw`, `max_power_residual_kw`, and `estimated_unexplained_loss_kwh` into `kelmarsh_wind.gold.ml_turbine_anomalies`.
 
 ---
 
@@ -225,7 +244,8 @@ All jobs and serverless compute environments are defined as code in [`databricks
 | `bronze_ingestion_job` | `02_bronze_autoloader_ingestion` | `autoloader_to_bronze_delta` | Runs Auto Loader into Bronze Delta tables |
 | `silver_transformation_job` | `03_silver_transformation` | `bronze_to_silver_delta` | Builds `turbines_dim`, `scada_10min_clean`, `status_events_clean` |
 | `gold_aggregation_job` | `04_gold_kpi_aggregations` | `silver_to_gold_delta` | Builds Gold KPI tables for Lakeview BI |
-| `medallion_end_to_end_pipeline` | `05_kelmarsh_medallion_orchestrator` | `bronze_autoloader` -> `silver_cleaning` -> `gold_kpis` | End-to-end multi-task Medallion DAG |
+| `medallion_end_to_end_pipeline` | `05_kelmarsh_medallion_orchestrator` | `bronze_autoloader` -> `silver_cleaning` -> `gold_kpis` -> `ml_digital_twin` | End-to-end multi-task Medallion + ML Digital Twin DAG |
+| `ml_digital_twin_job` | `06_ml_power_digital_twin` | `train_and_score_digital_twin` | Trains HGB Digital Twin, registers in UC, writes `ml_turbine_anomalies` |
 
 ![Databricks Asset Bundle Validation, Deployment & Execution](dashboards/screenshots/job_run.png)
 *Local IDE terminal validating (`databricks bundle validate`), deploying (`databricks bundle deploy`), and running the Serverless ingestion job with MD5 checksum verification and ADLS Volume extraction.*
@@ -240,6 +260,7 @@ The unit test suite validates core pipeline logic locally and in CI without requ
 - `test_strip_kelmarsh_preamble_removes_comments`: Uses `pytest`'s `tmp_path` fixture to verify the 9-line `#` comment preamble is removed while `# Date and time,...` is normalized into a valid CSV header.
 - `test_strip_kelmarsh_preamble_is_idempotent`: Verifies running `strip_kelmarsh_preamble` multiple times on already-cleaned files leaves them untouched.
 - `test_clean_numeric_col_returns_spark_column`: Uses `databricks-connect`'s Spark Connect client-only `Column` API to verify `clean_numeric_col` constructs the expected `CASE WHEN ... CAST` expression handling `"NaN"` and `"-"`.
+- `test_add_cyclical_features_computes_periodic_bounds`: Verifies `add_cyclical_features` maps periodic wind direction (`0°` and `360°`) and calendar month (`1–12`) to continuous sine/cosine coordinates.
 
 ### GitHub Actions Workflow ([`.github/workflows/ci.yml`](.github/workflows/ci.yml))
 Triggered automatically on every `push` and `pull_request` to `main`:
@@ -275,6 +296,14 @@ Building and running this platform on **Databricks Serverless Compute** and **Un
 ### 5. Liquid Clustering Over Hive Partitioning for Time-Series Telemetry
 - **Problem**: Partitioning 10-minute SCADA data by `(turbine_id, event_date)` across 9 years would create $6 \times 3,287 \approx 19,722$ partition directories, leading to severe small-file overhead on ADLS Gen2.
 - **Solution**: Used Delta **Liquid Clustering** (`.clusterBy("turbine_id", "event_date")` on Silver/Gold daily tables and `.clusterBy("turbine_id", "event_year")` on power curves and fault summaries) to achieve multi-dimensional Z-order-like data skipping without physical directory fragmentation.
+
+### 6. MLflow Tracking in Serverless `spark_python_task` Jobs Requires Explicit `mlflow.set_experiment()`
+- **Problem**: When running [`databricks/ml_power_prediction.py`](databricks/ml_power_prediction.py) as a plain Python script (`spark_python_task`) on Databricks Serverless rather than a Databricks Notebook, `mlflow.start_run()` failed with:
+  ```text
+  RestException: RESOURCE_DOES_NOT_EXIST: Could not find experiment with ID None
+  ```
+  Unlike interactive or job Notebooks—which automatically provision and attach a default notebook-scoped MLflow experiment—a standalone Python script on Serverless has no default experiment ID bound to its execution context unless `MLFLOW_EXPERIMENT_NAME` / `MLFLOW_EXPERIMENT_ID` is configured or `mlflow.set_experiment(...)` is called explicitly. Setting `mlflow.set_registry_uri("databricks-uc")` configures the Model Registry destination, but does not set the Tracking Experiment.
+- **Solution**: Explicitly call `mlflow.set_experiment("/Users/<workspace-user>/kelmarsh_power_digital_twin")` before `with mlflow.start_run(...):`. `set_experiment()` automatically creates the workspace experiment on first execution if it does not yet exist and binds a valid experiment ID to the run.
 
 ---
 
@@ -317,6 +346,9 @@ databricks bundle deploy -t dev
 # 1. Run cloud-to-cloud Zenodo data ingestion into ADLS Volume (one-time or per year)
 databricks bundle run ingest_kelmarsh_zenodo_job -t dev
 
-# 2. Run the end-to-end Medallion orchestrator (Bronze -> Silver -> Gold)
+# 2. Run the end-to-end Medallion + ML Digital Twin orchestrator (Bronze -> Silver -> Gold -> ML)
 databricks bundle run medallion_end_to_end_pipeline -t dev
+
+# Or run the standalone ML Digital Twin training & anomaly scoring job
+databricks bundle run ml_digital_twin_job -t dev
 ```

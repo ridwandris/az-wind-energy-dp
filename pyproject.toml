@@ -17,6 +17,8 @@ dev = [
     "ruff>=0.17.2",
     "databricks-connect~=18.0.0",
     "pytest>=8.3.5",
+    "scikit-learn~=1.6.1",
+    "mlflow-skinny~=3.8.1",
 ]
 
 [tool.databricks.environment]
