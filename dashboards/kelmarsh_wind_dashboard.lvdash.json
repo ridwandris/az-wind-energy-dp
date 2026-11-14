@@ -1,0 +1,932 @@
+{
+  "datasets": [
+    {
+      "name": "9fd1b8fd",
+      "displayName": "daily_performance",
+      "queryLines": [
+        "SELECT\n",
+        "    turbine_id,\n",
+        "    turbine_name,\n",
+        "    event_date,\n",
+        "    event_year,\n",
+        "    event_month,\n",
+        "    avg_wind_speed_ms,\n",
+        "    peak_wind_speed_ms,\n",
+        "    avg_active_power_kw,\n",
+        "    actual_energy_kwh / 1000.0 AS actual_energy_mwh,\n",
+        "    potential_energy_kwh / 1000.0 AS potential_energy_mwh,\n",
+        "    lost_downtime_kwh / 1000.0 AS lost_downtime_mwh,\n",
+        "    lost_curtailment_kwh / 1000.0 AS lost_curtailment_mwh,\n",
+        "    capacity_factor_pct,\n",
+        "    power_performance_index_pct,\n",
+        "    data_availability_pct\n",
+        "FROM kelmarsh_wind.gold.daily_turbine_performance\n",
+        "ORDER BY event_date, turbine_id;"
+      ]
+    },
+    {
+      "name": "4999865e",
+      "displayName": "iec_power_curves",
+      "queryLines": [
+        "SELECT\n",
+        "    turbine_id,\n",
+        "    turbine_name,\n",
+        "    event_year,\n",
+        "    wind_speed_bin_ms,\n",
+        "    interval_count,\n",
+        "    avg_active_power_kw,\n",
+        "    avg_potential_power_kw,\n",
+        "    power_deficit_kw,\n",
+        "    rated_power_kw\n",
+        "FROM kelmarsh_wind.gold.iec_power_curves\n",
+        "WHERE wind_speed_bin_ms BETWEEN 0.0 AND 25.0\n",
+        "  AND interval_count >= 10\n",
+        "ORDER BY wind_speed_bin_ms;"
+      ]
+    },
+    {
+      "name": "db715012",
+      "displayName": "fault_summary",
+      "queryLines": [
+        "SELECT\n",
+        "    turbine_id,\n",
+        "    turbine_name,\n",
+        "    event_year,\n",
+        "    event_month,\n",
+        "    status_type,\n",
+        "    COALESCE(iec_category, 'Uncategorized') AS iec_category,\n",
+        "    event_count,\n",
+        "    total_duration_hours,\n",
+        "    mttr_hours\n",
+        "FROM kelmarsh_wind.gold.monthly_fault_summary;"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "e99b4d60",
+      "displayName": "Kelmarsh Wind Farm - Asset Performance & Reliability",
+      "layout": [
+        {
+          "widget": {
+            "name": "ecd43fc6",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "9fd1b8fd",
+                  "fields": [
+                    {
+                      "name": "turbine_name",
+                      "expression": "`turbine_name`"
+                    },
+                    {
+                      "name": "sum(actual_energy_mwh)",
+                      "expression": "SUM(`actual_energy_mwh`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Actual Energy by Turbine (MWh)",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 3
+                  }
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "turbine_name",
+                  "displayName": "Turbine",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(actual_energy_mwh)",
+                  "displayName": "Actual Energy (MWh)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 7,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_total_energy",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "9fd1b8fd",
+                  "fields": [
+                    {
+                      "name": "sum(actual_energy_mwh)",
+                      "expression": "SUM(`actual_energy_mwh`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Energy Produced (MWh)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(actual_energy_mwh)",
+                  "displayName": "Total Energy (MWh)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 7,
+            "y": 2,
+            "width": 5,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_capacity_factor",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "9fd1b8fd",
+                  "fields": [
+                    {
+                      "name": "avg(capacity_factor_pct)",
+                      "expression": "AVG(`capacity_factor_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Avg Capacity Factor (%)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "avg(capacity_factor_pct)",
+                  "displayName": "Avg Capacity Factor (%)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 7,
+            "y": 4,
+            "width": 5,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_ppi",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "9fd1b8fd",
+                  "fields": [
+                    {
+                      "name": "avg(power_performance_index_pct)",
+                      "expression": "AVG(`power_performance_index_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Avg Power Performance Index (%)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "avg(power_performance_index_pct)",
+                  "displayName": "Avg Power Performance Index (%)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 7,
+            "y": 6,
+            "width": 5,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "iec_power_curve",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "4999865e",
+                  "fields": [
+                    {
+                      "name": "turbine_name",
+                      "expression": "`turbine_name`"
+                    },
+                    {
+                      "name": "wind_speed_bin_ms",
+                      "expression": "`wind_speed_bin_ms`"
+                    },
+                    {
+                      "name": "avg(avg_active_power_kw)",
+                      "expression": "AVG(`avg_active_power_kw`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "IEC 61400-12-1 Power Curve"
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "wind_speed_bin_ms",
+                  "displayName": "Wind Speed (m/s)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "avg(avg_active_power_kw)",
+                  "displayName": "Avg Active Power (kW)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "turbine_name",
+                  "displayName": "Turbine",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "monthly_yield_losses",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "9fd1b8fd",
+                  "fields": [
+                    {
+                      "name": "monthly(event_date)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `event_date`)"
+                    },
+                    {
+                      "name": "sum(actual_energy_mwh)",
+                      "expression": "SUM(`actual_energy_mwh`)"
+                    },
+                    {
+                      "name": "sum(lost_downtime_mwh)",
+                      "expression": "SUM(`lost_downtime_mwh`)"
+                    },
+                    {
+                      "name": "sum(lost_curtailment_mwh)",
+                      "expression": "SUM(`lost_curtailment_mwh`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Monthly Energy Yield vs. Losses (MWh)"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(event_date)",
+                  "displayName": "Month",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "fields": [
+                    {
+                      "fieldName": "sum(actual_energy_mwh)",
+                      "displayName": "Actual Energy"
+                    },
+                    {
+                      "fieldName": "sum(lost_downtime_mwh)",
+                      "displayName": "Lost - Downtime"
+                    },
+                    {
+                      "fieldName": "sum(lost_curtailment_mwh)",
+                      "displayName": "Lost - Curtailment"
+                    }
+                  ]
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 8,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "downtime_pareto",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "db715012",
+                  "fields": [
+                    {
+                      "name": "sum(total_duration_hours)",
+                      "expression": "SUM(`total_duration_hours`)"
+                    },
+                    {
+                      "name": "iec_category",
+                      "expression": "`iec_category`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Downtime Pareto by IEC Category (hours)"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "sum(total_duration_hours)",
+                  "displayName": "Total Downtime (h)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "iec_category",
+                  "displayName": "IEC Category",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 15,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "turbine_filter",
+            "queries": [
+              {
+                "name": "dashboards/01f1dfaf6b78198c979c4d6e3ec723c4/datasets/01f1dfaf960e1f24bad22b7ca1533f8c_turbine_name",
+                "query": {
+                  "datasetName": "9fd1b8fd",
+                  "fields": [
+                    {
+                      "name": "turbine_name",
+                      "expression": "`turbine_name`"
+                    },
+                    {
+                      "name": "turbine_name_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1dfaf6b78198c979c4d6e3ec723c4/datasets/01f1dfafba761c2d86e54fc9631ab9f8_turbine_name",
+                "query": {
+                  "datasetName": "4999865e",
+                  "fields": [
+                    {
+                      "name": "turbine_name",
+                      "expression": "`turbine_name`"
+                    },
+                    {
+                      "name": "turbine_name_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1dfaf6b78198c979c4d6e3ec723c4/datasets/01f1dfafd5151c6f9ecee9f8b57c13a7_turbine_name",
+                "query": {
+                  "datasetName": "db715012",
+                  "fields": [
+                    {
+                      "name": "turbine_name",
+                      "expression": "`turbine_name`"
+                    },
+                    {
+                      "name": "turbine_name_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Turbine",
+                  "fields": []
+                }
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "turbine_name",
+                    "queryName": "dashboards/01f1dfaf6b78198c979c4d6e3ec723c4/datasets/01f1dfaf960e1f24bad22b7ca1533f8c_turbine_name"
+                  },
+                  {
+                    "fieldName": "turbine_name",
+                    "queryName": "dashboards/01f1dfaf6b78198c979c4d6e3ec723c4/datasets/01f1dfafba761c2d86e54fc9631ab9f8_turbine_name"
+                  },
+                  {
+                    "fieldName": "turbine_name",
+                    "queryName": "dashboards/01f1dfaf6b78198c979c4d6e3ec723c4/datasets/01f1dfafd5151c6f9ecee9f8b57c13a7_turbine_name"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "yoy_energy",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "9fd1b8fd",
+                  "fields": [
+                    {
+                      "name": "yearly(event_date)",
+                      "expression": "DATE_TRUNC(\"YEAR\", `event_date`)"
+                    },
+                    {
+                      "name": "sum(actual_energy_mwh)",
+                      "expression": "SUM(`actual_energy_mwh`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "DATE_TRUNC(\"YEAR\", `event_date`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Annual Energy (MWh) - YoY"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(actual_energy_mwh)",
+                  "displayName": "Annual Energy (MWh)"
+                },
+                "target": {
+                  "fieldName": "sum(actual_energy_mwh)",
+                  "period": {
+                    "type": "relative-to-value-period",
+                    "offset": -1
+                  }
+                },
+                "period": {
+                  "fieldName": "yearly(event_date)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 21,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "yoy_cf",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "9fd1b8fd",
+                  "fields": [
+                    {
+                      "name": "yearly(event_date)",
+                      "expression": "DATE_TRUNC(\"YEAR\", `event_date`)"
+                    },
+                    {
+                      "name": "avg(capacity_factor_pct)",
+                      "expression": "AVG(`capacity_factor_pct`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "DATE_TRUNC(\"YEAR\", `event_date`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Capacity Factor (%) - YoY"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "avg(capacity_factor_pct)",
+                  "displayName": "Capacity Factor (%)"
+                },
+                "target": {
+                  "fieldName": "avg(capacity_factor_pct)",
+                  "period": {
+                    "type": "relative-to-value-period",
+                    "offset": -1
+                  }
+                },
+                "period": {
+                  "fieldName": "yearly(event_date)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 21,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "yoy_ppi",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "9fd1b8fd",
+                  "fields": [
+                    {
+                      "name": "yearly(event_date)",
+                      "expression": "DATE_TRUNC(\"YEAR\", `event_date`)"
+                    },
+                    {
+                      "name": "avg(power_performance_index_pct)",
+                      "expression": "AVG(`power_performance_index_pct`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "DATE_TRUNC(\"YEAR\", `event_date`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Power Performance Index (%) - YoY"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "avg(power_performance_index_pct)",
+                  "displayName": "PPI (%)"
+                },
+                "target": {
+                  "fieldName": "avg(power_performance_index_pct)",
+                  "period": {
+                    "type": "relative-to-value-period",
+                    "offset": -1
+                  }
+                },
+                "period": {
+                  "fieldName": "yearly(event_date)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 21,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "yoy_monthly_energy",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "9fd1b8fd",
+                  "fields": [
+                    {
+                      "name": "event_year",
+                      "expression": "`event_year`"
+                    },
+                    {
+                      "name": "event_month",
+                      "expression": "`event_month`"
+                    },
+                    {
+                      "name": "sum(actual_energy_mwh)",
+                      "expression": "SUM(`actual_energy_mwh`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Monthly Energy by Year (MWh)",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "event_month",
+                  "displayName": "Month",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(actual_energy_mwh)",
+                  "displayName": "Actual Energy (MWh)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "event_year",
+                  "displayName": "Year",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 24,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "yoy_stats_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "9fd1b8fd",
+                  "fields": [
+                    {
+                      "name": "event_year",
+                      "expression": "`event_year`"
+                    },
+                    {
+                      "name": "sum(actual_energy_mwh)",
+                      "expression": "SUM(`actual_energy_mwh`)"
+                    },
+                    {
+                      "name": "sum(potential_energy_mwh)",
+                      "expression": "SUM(`potential_energy_mwh`)"
+                    },
+                    {
+                      "name": "sum(lost_downtime_mwh)",
+                      "expression": "SUM(`lost_downtime_mwh`)"
+                    },
+                    {
+                      "name": "sum(lost_curtailment_mwh)",
+                      "expression": "SUM(`lost_curtailment_mwh`)"
+                    },
+                    {
+                      "name": "avg(capacity_factor_pct)",
+                      "expression": "AVG(`capacity_factor_pct`)"
+                    },
+                    {
+                      "name": "avg(power_performance_index_pct)",
+                      "expression": "AVG(`power_performance_index_pct`)"
+                    },
+                    {
+                      "name": "avg(avg_wind_speed_ms)",
+                      "expression": "AVG(`avg_wind_speed_ms`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Annual Performance Stats"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "event_year",
+                    "displayName": "Year"
+                  },
+                  {
+                    "fieldName": "sum(actual_energy_mwh)",
+                    "displayName": "Energy (MWh)"
+                  },
+                  {
+                    "fieldName": "sum(potential_energy_mwh)",
+                    "displayName": "Potential (MWh)"
+                  },
+                  {
+                    "fieldName": "sum(lost_downtime_mwh)",
+                    "displayName": "Lost Downtime (MWh)"
+                  },
+                  {
+                    "fieldName": "sum(lost_curtailment_mwh)",
+                    "displayName": "Lost Curtailment (MWh)"
+                  },
+                  {
+                    "fieldName": "avg(capacity_factor_pct)",
+                    "displayName": "Avg CF (%)"
+                  },
+                  {
+                    "fieldName": "avg(power_performance_index_pct)",
+                    "displayName": "Avg PPI (%)"
+                  },
+                  {
+                    "fieldName": "avg(avg_wind_speed_ms)",
+                    "displayName": "Avg Wind (m/s)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 31,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}

@@ -33,6 +33,9 @@ jobs:
       - name: Run Ruff format check
         run: uv run ruff format --check .
 
+      - name: Run Pytest unit tests
+        run: uv run pytest -v
+
   terraform-quality:
     name: Terraform Format and Validate
     runs-on: ubuntu-latest

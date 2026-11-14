@@ -1,0 +1,226 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 650" width="100%" height="100%" style="background-color: #161f2c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Primary Solid Arrowhead -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8"/>
+    </marker>
+
+    <!-- Accent Cyan Arrowhead for Medallion Transitions -->
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+
+    <!-- Official Azure Gradients -->
+    <linearGradient id="az-left" x1="0.7" y1="0.1" x2="0.2" y2="0.9">
+      <stop offset="0%" stop-color="#114A8B"/>
+      <stop offset="100%" stop-color="#0669BC"/>
+    </linearGradient>
+    <linearGradient id="az-right" x1="0.2" y1="0.1" x2="0.8" y2="0.9">
+      <stop offset="0%" stop-color="#3CCBF4"/>
+      <stop offset="100%" stop-color="#2892DF"/>
+    </linearGradient>
+
+    <!-- Reusable Official Microsoft Azure Icon (32x32 viewBox) -->
+    <g id="icon-azure">
+      <path d="M 11.2 2.0 L 20.4 2.0 L 10.6 29.5 C 10.2 30.5 9.3 31.0 8.2 31.0 L 1.8 31.0 C 0.6 31.0 -0.2 29.8 0.2 28.7 L 9.0 3.6 C 9.4 2.6 10.2 2.0 11.2 2.0 Z" fill="url(#az-left)"/>
+      <path d="M 23.8 20.6 L 10.1 20.6 C 9.4 20.6 9.0 21.4 9.5 21.9 L 18.3 30.2 C 18.9 30.7 19.6 31.0 20.4 31.0 L 28.2 31.0 L 23.8 20.6 Z" fill="#0078D4"/>
+      <path d="M 11.2 2.0 C 10.1 2.0 9.3 2.7 9.0 3.7 L 15.6 21.8 L 28.4 31.0 L 30.6 31.0 C 31.8 31.0 32.5 29.8 32.1 28.7 L 21.6 3.5 C 21.2 2.6 20.4 2.0 19.4 2.0 L 11.2 2.0 Z" fill="url(#az-right)"/>
+    </g>
+
+    <!-- Official Delta Lake Icon from delta-io/website (scaled to 32x32 viewBox) -->
+    <g id="icon-delta" transform="scale(0.5)">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M55.5445 46.8891L33.9669 9.62488C33.4843 8.79171 32.2922 8.79171 31.8096 9.62488L13.4723 41.2927C13.15 41.8498 13.7317 42.493 14.3098 42.2192C14.5472 42.1063 14.8211 41.9928 15.122 41.8796L15.1159 41.892C15.1159 41.892 15.6169 41.6958 16.4635 41.4249C17.3965 41.1354 18.4189 40.8613 19.3445 40.6297C21.9344 40.0258 25.3282 39.5341 28.3884 40.0474C31.2047 40.5194 33.166 41.282 34.5945 42.0314C35.2494 42.3755 35.868 41.5119 35.3384 40.9921C33.2903 38.9816 30.1388 36.5547 25.3454 35.5377C25.1355 35.4932 25.0302 35.2541 25.1387 35.067L32.3579 22.5995C32.5953 22.1899 33.1812 22.1899 33.4186 22.5995L47.206 46.4102C47.4965 46.9117 47.253 47.5522 46.7076 47.7367C45.6272 48.1014 44.3366 48.3742 42.8919 48.3742C41.9727 48.3742 41.0481 48.2647 40.1212 48.0471C40.1212 48.0471 37.4494 47.6212 33.8781 45.4691C30.3069 43.3173 23.4213 40.5721 15.6949 45.0164C12.4029 47.1531 10.2094 50.0756 9.0535 51.9104C8.87246 52.1976 9.18498 52.5401 9.48229 52.3798C12.137 50.9474 19.2947 47.5643 25.7444 48.7805C29.5779 49.5031 33.9588 52.4263 38.5129 54.1024C46.0466 56.9222 53.4326 52.198 53.4485 52.1878C54.2293 51.6667 54.6879 51.2706 54.7659 51.2019L54.8602 51.1188C56.064 50.0576 56.3512 48.282 55.5445 46.8891Z" fill="#00ADD4"/>
+    </g>
+
+    <!-- Official Databricks Logo Icon (scaled to 32x32 viewBox) -->
+    <g id="icon-databricks" transform="translate(2.5, 1) scale(1.9)">
+      <path d="M13.7194 6.60746L7.25506 10.338L0.332928 6.35214L0 6.53654L0 9.43016L7.25506 13.6004L13.7194 9.88406V11.416L7.25506 15.1465L0.332928 11.1607L0 11.3451L0 11.8415L7.25506 16.0117L14.4962 11.8415V8.94789L14.1633 8.76349L7.25506 12.7351L0.776832 9.01881L0.776832 7.4869L7.25506 11.2032L14.4962 7.033V4.18193L14.1356 3.96917L7.25506 7.92661L1.10976 4.40888L7.25506 0.876967L12.3045 3.78477L12.7484 3.52945V3.17484L7.25506 0.0117187L0 4.18193L0 4.63583L7.25506 8.80605L13.7194 5.07555V6.60746Z" fill="#FF3621"/>
+    </g>
+
+    <!-- Reusable Tapered Wind Turbine Icon -->
+    <g id="icon-wind-turbine">
+      <line x1="9" y1="36" x2="23" y2="36" stroke="#cbd5e1" stroke-width="1.8" stroke-linecap="round"/>
+      <polygon points="14.7,15 17.3,15 18.5,36 13.5,36" fill="#cbd5e1"/>
+      <g transform="translate(16, 14)">
+        <path d="M -0.9 -1.5 L -1.3 -11.5 C -1.3 -13.5 0.6 -13.5 0.8 -11.5 L 1.1 -1.5 Z" fill="#e2e8f0"/>
+        <path d="M -0.9 -1.5 L -1.3 -11.5 C -1.3 -13.5 0.6 -13.5 0.8 -11.5 L 1.1 -1.5 Z" fill="#e2e8f0" transform="rotate(120)"/>
+        <path d="M -0.9 -1.5 L -1.3 -11.5 C -1.3 -13.5 0.6 -13.5 0.8 -11.5 L 1.1 -1.5 Z" fill="#e2e8f0" transform="rotate(240)"/>
+        <circle cx="0" cy="0" r="2.4" fill="#161f2c" stroke="#ffffff" stroke-width="1.5"/>
+      </g>
+    </g>
+
+    <style>
+      .title { fill: #ffffff; font-size: 25px; font-weight: 600; letter-spacing: 0.3px; }
+      .section-hdr { fill: #8b9bb4; font-size: 11.5px; font-weight: 700; letter-spacing: 1.3px; }
+      .box-title { fill: #ffffff; font-size: 15px; font-weight: 600; }
+      .box-sub { fill: #94a3b8; font-size: 12px; font-weight: 400; }
+      .card-hdr { fill: #ffffff; font-size: 14px; font-weight: 600; }
+      .table-txt { fill: #cbd5e1; font-size: 11px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; }
+      .edge-lbl { fill: #cbd5e1; font-size: 11.5px; font-weight: 500; }
+      .container-box { fill: #1b2636; stroke: #475569; stroke-width: 1.5; rx: 8; }
+      .medallion-card { fill: #243247; stroke: #3b4f6b; stroke-width: 1.2; rx: 6; }
+      .flow-line { stroke: #94a3b8; stroke-width: 1.8; fill: none; marker-end: url(#arrow); }
+      .medallion-line { stroke: #38bdf8; stroke-width: 1.8; fill: none; marker-end: url(#arrow-cyan); }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1240" height="650" fill="#161f2c"/>
+
+  <!-- Main Title -->
+  <text x="40" y="52" class="title">European Wind Energy Lakehouse - Data Platform Architecture</text>
+
+  <!-- ==================== 1. DATA SOURCE (TOP-LEFT) ==================== -->
+  <rect x="40" y="92" width="250" height="96" class="container-box"/>
+  <rect x="54" y="83" width="108" height="18" fill="#161f2c"/>
+  <text x="108" y="96" text-anchor="middle" class="section-hdr">DATA SOURCE</text>
+
+  <!-- API Globe + Wind Turbine Icons -->
+  <g transform="translate(58, 118)" stroke="#cbd5e1" stroke-width="1.5" fill="none">
+    <circle cx="16" cy="16" r="14"/>
+    <ellipse cx="16" cy="16" rx="7" ry="14"/>
+    <line x1="3" y1="11" x2="29" y2="11"/>
+    <line x1="3" y1="21" x2="29" y2="21"/>
+    <rect x="5" y="11" width="22" height="10" fill="#161f2c" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="19" text-anchor="middle" fill="#ffffff" stroke="none" font-size="8.5" font-weight="700">API</text>
+  </g>
+  <use href="#icon-wind-turbine" x="96" y="114"/>
+
+  <text x="140" y="138" class="box-title">Zenodo API</text>
+  <text x="140" y="158" class="box-sub">Kelmarsh SCADA (2016–2024)</text>
+
+  <!-- ==================== 2. CI/CD & QUALITY (MID-LEFT) ==================== -->
+  <rect x="40" y="218" width="250" height="96" class="container-box"/>
+  <rect x="54" y="209" width="126" height="18" fill="#161f2c"/>
+  <text x="117" y="222" text-anchor="middle" class="section-hdr">CI/CD &amp; QUALITY</text>
+
+  <!-- GitHub Actions + Terraform Icons -->
+  <g transform="translate(58, 242)" stroke="#38bdf8" stroke-width="1.7" fill="none">
+    <circle cx="9" cy="9" r="6.5"/>
+    <path d="M7 6.5 L12 9 L7 11.5 Z" fill="#38bdf8" stroke="none"/>
+    <path d="M9 15.5 L9 24 L16 24"/>
+    <circle cx="20" cy="24" r="3.5"/>
+    <circle cx="30" cy="24" r="3.5"/>
+    <line x1="23.5" y1="24" x2="26.5" y2="24"/>
+    <path d="M9 20 L9 32 L16 32"/>
+    <circle cx="20" cy="32" r="3.5"/>
+    <circle cx="30" cy="32" r="3.5"/>
+    <line x1="23.5" y1="32" x2="26.5" y2="32"/>
+  </g>
+  <g transform="translate(98, 242) scale(0.82)" fill="#7B42BC">
+    <polygon points="0,2 11,8 11,20 0,14"/>
+    <polygon points="13,9 24,15 24,27 13,21"/>
+    <polygon points="26,15 37,9 37,21 26,27" fill="#5C2D91"/>
+    <polygon points="13,23 24,29 24,41 13,35"/>
+  </g>
+
+  <text x="140" y="264" class="box-title">Quality Gate</text>
+  <text x="140" y="284" class="box-sub">ruff, pytest, terraform</text>
+
+  <!-- ==================== FLOW ARROWS TO COMPUTE ==================== -->
+  <line x1="290" y1="140" x2="498" y2="140" class="flow-line"/>
+  <text x="394" y="130" text-anchor="middle" class="edge-lbl">HTTPS / ZIP Stream</text>
+
+  <line x1="290" y1="266" x2="498" y2="266" class="flow-line"/>
+  <text x="394" y="256" text-anchor="middle" class="edge-lbl">Git Push (Asset Bundles)</text>
+
+  <!-- ==================== 3. COMPUTE (TOP-RIGHT) ==================== -->
+  <rect x="508" y="92" width="380" height="222" class="container-box"/>
+  <rect x="524" y="83" width="90" height="18" fill="#161f2c"/>
+  <text x="569" y="96" text-anchor="middle" class="section-hdr">COMPUTE</text>
+
+  <!-- Official Azure & Databricks Icons -->
+  <use href="#icon-azure" x="656" y="130"/>
+  <use href="#icon-databricks" x="708" y="130"/>
+
+  <text x="698" y="198" text-anchor="middle" class="box-title" font-size="16">Azure Databricks (Serverless)</text>
+  <text x="698" y="220" text-anchor="middle" class="box-sub">Orchestrated via Databricks Asset Bundles (DABs)</text>
+  <text x="698" y="252" text-anchor="middle" class="table-txt">Ingest  --&gt;  Bronze  --&gt;  Silver  --&gt;  Gold</text>
+
+  <!-- Vertical Flow Arrow: Compute -> Storage -->
+  <line x1="698" y1="314" x2="698" y2="376" class="flow-line"/>
+
+  <!-- ==================== 4. STORAGE & GOVERNANCE (BOTTOM) ==================== -->
+  <rect x="40" y="386" width="985" height="230" class="container-box"/>
+  <rect x="56" y="377" width="188" height="18" fill="#161f2c"/>
+  <text x="150" y="390" text-anchor="middle" class="section-hdr">STORAGE &amp; GOVERNANCE</text>
+
+  <!-- Official Azure Icon Inside Storage Header -->
+  <g transform="translate(62, 402) scale(0.82)">
+    <use href="#icon-azure"/>
+  </g>
+  <text x="102" y="423" class="box-title" font-size="16">Azure ADLS Gen2 &amp; Unity Catalog (kelmarsh_wind)</text>
+
+  <!-- Card 1: Landing Volume -->
+  <g transform="translate(60, 442)">
+    <rect width="205" height="156" class="medallion-card"/>
+    <text x="102.5" y="26" text-anchor="middle" class="card-hdr">Landing Volume</text>
+    <g transform="translate(91, 42)" stroke="#cbd5e1" stroke-width="1.6" fill="none" stroke-linejoin="round">
+      <path d="M2 0 L15 0 L22 7 L22 28 L2 28 Z"/>
+      <path d="M15 0 L15 7 L22 7"/>
+    </g>
+    <text x="102.5" y="102" text-anchor="middle" class="table-txt">kelmarsh_landing_vol</text>
+  </g>
+
+  <line x1="265" y1="520" x2="297" y2="520" class="medallion-line"/>
+
+  <!-- Card 2: Bronze (Raw) -->
+  <g transform="translate(305, 442)">
+    <rect width="205" height="156" class="medallion-card"/>
+    <text x="102.5" y="26" text-anchor="middle" class="card-hdr">Bronze (Raw)</text>
+    <use href="#icon-delta" x="86.5" y="38"/>
+    <text x="102.5" y="92" text-anchor="middle" class="table-txt">scada_10min_raw</text>
+    <text x="102.5" y="116" text-anchor="middle" class="table-txt">status_events_raw</text>
+    <text x="102.5" y="140" text-anchor="middle" class="table-txt">turbine_static_raw</text>
+  </g>
+
+  <line x1="510" y1="520" x2="542" y2="520" class="medallion-line"/>
+
+  <!-- Card 3: Silver (Cleaned) -->
+  <g transform="translate(550, 442)">
+    <rect width="205" height="156" class="medallion-card"/>
+    <text x="102.5" y="26" text-anchor="middle" class="card-hdr">Silver (Cleaned)</text>
+    <use href="#icon-delta" x="86.5" y="38"/>
+    <text x="102.5" y="92" text-anchor="middle" class="table-txt">scada_10min_clean</text>
+    <text x="102.5" y="116" text-anchor="middle" class="table-txt">status_events_clean</text>
+    <text x="102.5" y="140" text-anchor="middle" class="table-txt">turbines_dim</text>
+  </g>
+
+  <line x1="755" y1="520" x2="787" y2="520" class="medallion-line"/>
+
+  <!-- Card 4: Gold (Aggr.) -->
+  <g transform="translate(795, 442)">
+    <rect width="210" height="156" class="medallion-card"/>
+    <text x="105" y="26" text-anchor="middle" class="card-hdr">Gold (Aggr.)</text>
+    <use href="#icon-delta" x="89" y="38"/>
+    <text x="105" y="92" text-anchor="middle" class="table-txt">daily_turbine_performance</text>
+    <text x="105" y="116" text-anchor="middle" class="table-txt">iec_power_curves</text>
+    <text x="105" y="140" text-anchor="middle" class="table-txt">monthly_fault_summary</text>
+  </g>
+
+  <!-- ==================== 5. CONSUMPTION / BI (BOTTOM-RIGHT) ==================== -->
+  <line x1="1025" y1="520" x2="1065" y2="520" class="flow-line"/>
+
+  <rect x="1075" y="442" width="135" height="156" class="container-box"/>
+  <rect x="1084" y="433" width="117" height="18" fill="#161f2c"/>
+  <text x="1142.5" y="446" text-anchor="middle" class="section-hdr">CONSUMPTION / BI</text>
+
+  <!-- Dashboard Icon -->
+  <g transform="translate(1117.5, 468)" stroke="#38bdf8" stroke-width="1.6" fill="none">
+    <rect x="0" y="0" width="50" height="38" rx="3" stroke="#cbd5e1"/>
+    <line x1="0" y1="8" x2="50" y2="8" stroke="#cbd5e1"/>
+    <circle cx="5" cy="4" r="1" fill="#cbd5e1"/>
+    <circle cx="9" cy="4" r="1" fill="#cbd5e1"/>
+    <circle cx="13" cy="4" r="1" fill="#cbd5e1"/>
+    <circle cx="15" cy="23" r="8"/>
+    <path d="M15 15 L15 23 L22 20"/>
+    <line x1="29" y1="15" x2="43" y2="15"/>
+    <line x1="29" y1="19" x2="40" y2="19"/>
+    <line x1="31" y1="33" x2="31" y2="27"/>
+    <line x1="36" y1="33" x2="36" y2="24"/>
+    <line x1="41" y1="33" x2="41" y2="29"/>
+  </g>
+
+  <text x="1142.5" y="534" text-anchor="middle" class="box-title" font-size="13.5">Databricks AI/BI</text>
+  <text x="1142.5" y="554" text-anchor="middle" class="box-title" font-size="13.5">Dashboard</text>
+</svg>
