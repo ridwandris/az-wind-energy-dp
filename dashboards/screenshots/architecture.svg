@@ -68,7 +68,7 @@
   <rect width="1240" height="650" fill="#161f2c"/>
 
   <!-- Main Title -->
-  <text x="40" y="52" class="title">European Wind Energy Lakehouse - Data Platform Architecture</text>
+  <text x="40" y="52" class="title">Kelmarsh Wind Energy Lakehouse - End-to-end Data Platform Architecture</text>
 
   <!-- ==================== 1. DATA SOURCE (TOP-LEFT) ==================== -->
   <rect x="40" y="92" width="250" height="96" class="container-box"/>
